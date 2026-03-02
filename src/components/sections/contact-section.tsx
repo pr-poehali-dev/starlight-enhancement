@@ -1,50 +1,25 @@
 import { useReveal } from "@/hooks/use-reveal"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { MagneticButton } from "@/components/magnetic-button"
 import Icon from "@/components/ui/icon"
+import { ALL_QUESTIONS, shuffleArray, type QuizQuestion } from "@/lib/false-friends-data"
 
-const questions = [
-  {
-    question: "Что значит английское слово «accurate»?",
-    options: ["Аккуратный, опрятный", "Точный, правильный", "Быстрый, ловкий", "Умный, сообразительный"],
-    correct: 1,
-    explanation: "«Accurate» — точный, правильный. «Аккуратный» по-английски — «neat» или «tidy».",
-  },
-  {
-    question: "Переведите: «She bought a magazine at the shop»",
-    options: ["Она купила магазин", "Она купила журнал в магазине", "Она открыла магазин", "Она нашла журнал"],
-    correct: 1,
-    explanation: "«Magazine» — журнал, а не магазин. «Магазин» по-английски — «shop» или «store».",
-  },
-  {
-    question: "Что значит «fabric» в предложении «The fabric was soft»?",
-    options: ["Фабрика была большой", "Ткань была мягкой", "Завод был новым", "Здание было старым"],
-    correct: 1,
-    explanation: "«Fabric» — ткань, материал. «Фабрика» по-английски — «factory» или «plant».",
-  },
-  {
-    question: "«He was sympathetic» — что это значит?",
-    options: ["Он был симпатичным", "Он был добрым", "Он выражал сочувствие", "Он был весёлым"],
-    correct: 2,
-    explanation: "«Sympathetic» — сочувствующий, понимающий. «Симпатичный» по-английски — «attractive» или «good-looking».",
-  },
-  {
-    question: "Что означает «brilliant idea»?",
-    options: ["Бриллиантовая идея", "Блестящая идея", "Дорогая идея", "Редкая идея"],
-    correct: 1,
-    explanation: "«Brilliant» — блестящий, великолепный. «Бриллиант» по-английски — «diamond».",
-  },
-]
+const QUIZ_LENGTH = 7
+
+function buildQuiz(): QuizQuestion[] {
+  return shuffleArray(ALL_QUESTIONS).slice(0, QUIZ_LENGTH)
+}
 
 export function ContactSection() {
   const { ref, isVisible } = useReveal(0.3)
+  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>(() => buildQuiz())
   const [current, setCurrent] = useState(0)
   const [selected, setSelected] = useState<number | null>(null)
   const [score, setScore] = useState(0)
   const [finished, setFinished] = useState(false)
   const [showExplanation, setShowExplanation] = useState(false)
 
-  const q = questions[current]
+  const q = quizQuestions[current]
 
   const handleAnswer = (idx: number) => {
     if (selected !== null) return
@@ -54,7 +29,7 @@ export function ContactSection() {
   }
 
   const handleNext = () => {
-    if (current + 1 >= questions.length) {
+    if (current + 1 >= quizQuestions.length) {
       setFinished(true)
     } else {
       setCurrent((c) => c + 1)
@@ -64,6 +39,7 @@ export function ContactSection() {
   }
 
   const handleRestart = () => {
+    setQuizQuestions(buildQuiz())
     setCurrent(0)
     setSelected(null)
     setScore(0)
@@ -72,9 +48,10 @@ export function ContactSection() {
   }
 
   const getScoreLabel = () => {
-    if (score === 5) return "Превосходно! Вы настоящий знаток."
-    if (score >= 3) return "Хороший результат! Почти всё верно."
-    if (score >= 1) return "Есть над чем поработать."
+    const pct = score / quizQuestions.length
+    if (pct === 1) return "Превосходно! Вы настоящий знаток."
+    if (pct >= 0.7) return "Хороший результат! Почти всё верно."
+    if (pct >= 0.4) return "Есть над чем поработать."
     return "Нужно подучиться! Загляните в справочник."
   }
 
@@ -87,7 +64,7 @@ export function ContactSection() {
         <div className="grid gap-8 md:grid-cols-[1fr_1.4fr] md:gap-16 lg:gap-24">
           <div className="flex flex-col justify-center">
             <div
-              className={`mb-6 transition-all duration-700 md:mb-12 ${
+              className={`mb-6 transition-all duration-700 md:mb-10 ${
                 isVisible ? "translate-x-0 opacity-100" : "-translate-x-12 opacity-0"
               }`}
             >
@@ -106,14 +83,14 @@ export function ContactSection() {
               style={{ transitionDelay: "200ms" }}
             >
               <p className="max-w-xs text-sm leading-relaxed text-foreground/80 md:text-base">
-                5 вопросов на знание ложных друзей переводчика. Выберите правильный перевод.
+                {QUIZ_LENGTH} случайных вопросов из банка {ALL_QUESTIONS.length}. Каждый раз — новый набор.
               </p>
               {!finished && (
-                <div className="flex items-center gap-3">
-                  {questions.map((_, i) => (
+                <div className="flex items-center gap-1.5">
+                  {quizQuestions.map((_, i) => (
                     <div
                       key={i}
-                      className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
+                      className={`h-1 flex-1 rounded-full transition-all duration-500 ${
                         i < current
                           ? "bg-foreground/70"
                           : i === current
@@ -126,7 +103,7 @@ export function ContactSection() {
               )}
               {!finished && (
                 <p className="font-mono text-xs text-foreground/50">
-                  Вопрос {current + 1} из {questions.length}
+                  Вопрос {current + 1} из {quizQuestions.length}
                 </p>
               )}
             </div>
@@ -143,22 +120,22 @@ export function ContactSection() {
                 <div className="flex items-center gap-4">
                   <div className="text-6xl font-light text-foreground md:text-8xl">{score}</div>
                   <div>
-                    <div className="font-sans text-lg font-light text-foreground md:text-2xl">из {questions.length}</div>
+                    <div className="font-sans text-lg font-light text-foreground md:text-2xl">из {quizQuestions.length}</div>
                     <div className="font-mono text-xs text-foreground/60">правильных ответов</div>
                   </div>
                 </div>
                 <p className="font-sans text-base text-foreground/90 md:text-lg">{getScoreLabel()}</p>
                 <MagneticButton variant="primary" size="lg" onClick={handleRestart}>
-                  Пройти снова
+                  Новый набор вопросов
                 </MagneticButton>
               </div>
             ) : (
-              <div className="space-y-4 md:space-y-6">
+              <div className="space-y-4 md:space-y-5">
                 <p className="font-sans text-base font-light text-foreground md:text-xl lg:text-2xl leading-snug">
                   {q.question}
                 </p>
 
-                <div className="space-y-2 md:space-y-3">
+                <div className="space-y-2 md:space-y-2.5">
                   {q.options.map((opt, idx) => {
                     const isChosen = selected === idx
                     const isCorrect = idx === q.correct
@@ -187,14 +164,14 @@ export function ContactSection() {
                       <button
                         key={idx}
                         onClick={() => handleAnswer(idx)}
-                        className={`w-full border px-4 py-2.5 text-left font-sans text-sm transition-all duration-300 md:px-5 md:py-3 md:text-base ${borderClass} ${bgClass} ${textClass} ${
+                        className={`w-full border px-4 py-2 text-left font-sans text-sm transition-all duration-300 md:px-5 md:py-2.5 md:text-base ${borderClass} ${bgClass} ${textClass} ${
                           !revealed ? "cursor-pointer" : "cursor-default"
                         }`}
                       >
-                        <span className="font-mono text-xs text-foreground/40 mr-3">{String.fromCharCode(65 + idx)}.</span>
+                        <span className="font-mono text-xs text-foreground/35 mr-3">{String.fromCharCode(65 + idx)}.</span>
                         {opt}
                         {revealed && isCorrect && (
-                          <Icon name="Check" size={14} className="inline ml-2 text-foreground/70" />
+                          <Icon name="Check" size={13} className="inline ml-2 text-foreground/70" />
                         )}
                       </button>
                     )
@@ -202,14 +179,14 @@ export function ContactSection() {
                 </div>
 
                 {showExplanation && (
-                  <div className="border-l border-foreground/30 pl-4 py-1">
+                  <div className="border-l border-foreground/30 pl-4 py-0.5">
                     <p className="font-mono text-xs text-foreground/70 leading-relaxed">{q.explanation}</p>
                   </div>
                 )}
 
                 {selected !== null && (
                   <MagneticButton variant="primary" onClick={handleNext}>
-                    {current + 1 >= questions.length ? "Посмотреть результат" : "Следующий вопрос"}
+                    {current + 1 >= quizQuestions.length ? "Посмотреть результат" : "Следующий вопрос"}
                   </MagneticButton>
                 )}
               </div>
