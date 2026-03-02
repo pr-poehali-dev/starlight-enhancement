@@ -15,35 +15,35 @@ export function ServicesSection() {
           }`}
         >
           <h2 className="mb-2 font-sans text-5xl font-light tracking-tight text-foreground md:text-6xl lg:text-7xl">
-            Услуги
+            История
           </h2>
-          <p className="font-mono text-sm text-foreground/60 md:text-base">/ Наши компетенции</p>
+          <p className="font-mono text-sm text-foreground/60 md:text-base">/ Откуда взялся термин</p>
         </div>
 
         <div className="grid gap-8 md:grid-cols-2 md:gap-x-16 md:gap-y-12 lg:gap-x-24">
           {[
             {
-              title: "Веб-разработка",
-              description: "Создание современных веб-приложений любой сложности",
+              title: "1928 год",
+              description: "Французские лингвисты Максимилиан Кёсслер и Жюль Дерокиньи впервые описали явление в книге «Les faux amis» — «Ложные друзья».",
               direction: "top",
             },
             {
-              title: "UI/UX Дизайн",
-              description: "Проектирование удобных и красивых интерфейсов",
+              title: "Межъязыковая интерференция",
+              description: "Явление возникает, когда слова двух языков похожи по звучанию или написанию, но расходятся по значению из-за разной этимологии.",
               direction: "right",
             },
             {
-              title: "Мобильные приложения",
-              description: "Кроссплатформенная разработка для iOS и Android",
+              title: "Общий источник",
+              description: "Часть «ложных друзей» — исторические родственники: оба слова произошли от одного корня, но в каждом языке пошли своим путём.",
               direction: "left",
             },
             {
-              title: "Консалтинг",
-              description: "Техническая экспертиза и стратегическое планирование",
+              title: "Случайное сходство",
+              description: "Другая часть — случайные совпадения без общей этимологии. Например, английское «brat» (ребёнок-грубиян) и русское «брат».",
               direction: "bottom",
             },
-          ].map((service, i) => (
-            <ServiceCard key={i} service={service} index={i} isVisible={isVisible} />
+          ].map((item, i) => (
+            <HistoryCard key={i} item={item} index={i} isVisible={isVisible} />
           ))}
         </div>
       </div>
@@ -51,18 +51,18 @@ export function ServicesSection() {
   )
 }
 
-function ServiceCard({
-  service,
+function HistoryCard({
+  item,
   index,
   isVisible,
 }: {
-  service: { title: string; description: string; direction: string }
+  item: { title: string; description: string; direction: string }
   index: number
   isVisible: boolean
 }) {
   const getRevealClass = () => {
     if (!isVisible) {
-      switch (service.direction) {
+      switch (item.direction) {
         case "left":
           return "-translate-x-16 opacity-0"
         case "right":
@@ -81,16 +81,14 @@ function ServiceCard({
   return (
     <div
       className={`group transition-all duration-700 ${getRevealClass()}`}
-      style={{
-        transitionDelay: `${index * 150}ms`,
-      }}
+      style={{ transitionDelay: `${index * 150}ms` }}
     >
       <div className="mb-3 flex items-center gap-3">
         <div className="h-px w-8 bg-foreground/30 transition-all duration-300 group-hover:w-12 group-hover:bg-foreground/50" />
         <span className="font-mono text-xs text-foreground/60">0{index + 1}</span>
       </div>
-      <h3 className="mb-2 font-sans text-2xl font-light text-foreground md:text-3xl">{service.title}</h3>
-      <p className="max-w-sm text-sm leading-relaxed text-foreground/80 md:text-base">{service.description}</p>
+      <h3 className="mb-2 font-sans text-2xl font-light text-foreground md:text-3xl">{item.title}</h3>
+      <p className="max-w-sm text-sm leading-relaxed text-foreground/80 md:text-base">{item.description}</p>
     </div>
   )
 }
